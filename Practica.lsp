@@ -1,3 +1,6 @@
+;------------------------------------------------------------------------------
+; Declaración de constantes
+;------------------------------------------------------------------------------
 (defconstant IMAGE_AREA_START_X 440)
 (defconstant IMAGE_AREA_START_Y 175)
 (defconstant IMAGE_AREA_SIZE 200)
@@ -13,6 +16,9 @@
 (defun inicio()
     (cls)
     (printProductList)
+    (initializeTotalWindow)
+    (initializeOrderNumberWindow)
+    (printHeader)
     (initializeImageArea)
     (initializeComunicationWindow)
 )
@@ -25,6 +31,9 @@
     (printProducts)
 )
 
+;------------------------------------------------------------------------------
+; Mostrar los productos disponibles en el áerea correspondiente. 
+;------------------------------------------------------------------------------
 (defun printProducts ()
     (write 3 1 "01. UltraBoost 20      189,99")
     (write 4 1 "02. Asics Nim. 22      169,99")
@@ -50,9 +59,26 @@
 )
 
 (defun initializeComunicationWindow ()
-    (rectangle 100 97 400 30) 
-    (write 17 14 "[] INICIAR PEDIDO (S/N):")
-    (goto-xy 38 17)
+    (rectangle 5 5 315 30) 
+    (write 23 1 "[] INICIAR PEDIDO (S/N):")
+	(goto-xy 26 23)
+    (setq product (read)) 
+)
+
+(defun initializeTotalWindow ()
+    (rectangle 325 5 310 30)
+    (fillAreaColor 0 0 0 635 5 325 35)
+)
+
+(defun initializeOrderNumberWindow ()
+    (rectangle 5 140 630 30)
+    (fillAreaColor 0 0 0 5 140 635 170)
+)
+
+(defun printHeader () 
+    (rectangle 5 335 430 39)
+    (fillAreaColor 0 0 0 5 335 435 469)
+    (printWord "PRODUCTOS" 90 345 10)
 )
 
 ;------------------------------------------------------------------------------
@@ -86,6 +112,8 @@
 		(setq G (read-byte fichero nil))
 		(setq R (read-byte fichero nil))
 		(if (null B) (return ()) )
+		(if (null G) (return ()) )
+		(if (null R) (return ()) )
 		(color R G B)
 		(draw (+ 1 x1) y)
 		(setq pixel  (+ pixel  1))
@@ -101,4 +129,30 @@
 (defun write (linea columna TEXTO)
 	(goto-xy columna linea)
 	(princ TEXTO)
+)
+
+(defun fillAreaColor (r g b x1 y1 x2 y2)
+	(color r g b)
+	(paralelepipedo x1 y1 x2 y2)
+	(dotimes (i (- y2 y1))
+		(move x1 (+ i y1))
+		(draw x2 (+ i y1))
+	)
+	(color 0 0 0)
+)
+
+(defun paralelepipedo (x1 y1 x2 y2)
+	(move x1 y1)
+	(draw x1 y2 x2 y2 x2 y1 x1 y1)
+)
+
+(defun printLetter (letra x y)
+    (printImage (concatenate 'string "images/" letra "_NB.bmp") x y 20)
+)
+
+(defun printWord (palabra x y espaciado)
+    (dotimes (i (length palabra))
+	(printLetter (string (aref palabra i)) x y)
+	(setq x (+ 20 x espaciado))
+    )
 )
