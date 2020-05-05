@@ -10,6 +10,13 @@
 (defconstant PRODUCT_AREA_LONG_X 430)
 (defconstant PRODUCT_AREA_LONG_Y 155)
 
+(defconstant LOGO "images/LogoPractica.bmp")
+
+(defconstant START_ORDER_MESSAGE "[] INICIAR PEDIDO (S/N):")
+(defconstant ORDER_NUMBER_MESSAGE "[] INDICAR NÚMERO DE PEDIDO:")
+(defconstant PRODUCT_NUMBER_MESSAGE "[] NÚMERO DE PRODUCTO:")
+(defconstant CONTINUE_ORDER "[] CONTINUAR PEDIDO (S/N):")
+
 ;------------------------------------------------------------------------------
 ; Introducción de los productos junto a su precio. Lista de listas de productos.
 ;------------------------------------------------------------------------------
@@ -39,6 +46,12 @@
 ; Función que inicia todo el programa.
 ;------------------------------------------------------------------------------
 (defun inicio()
+    (initGuiElements)
+    (menu)
+    (goodbyeMessage)
+)
+
+(defun initGuiElements()
     (cls)
     (printProductList)
     (initializeTotalWindow)
@@ -47,6 +60,85 @@
     (initializeImageArea)
     (initializeChosedProductsWindow)
     (initializeComunicationWindow)
+)
+
+(defun menu ()
+    ;Bucle principal
+    (loop
+        (writeInComunicationWindow START_ORDER_MESSAGE)
+        (if (not (string= "S" (princ-to-string (read)))) (return))
+
+        (writeInComunicationWindow ORDER_NUMBER_MESSAGE)
+        (setq orderNumber (read))
+        (printOrderNumber orderNumber)
+
+        (writeInComunicationWindow PRODUCT_NUMBER_MESSAGE)
+        (setq productNumber (read))
+        (printProductImage productNumber)
+        
+        (writeInComunicationWindow "UNIDADES:")
+        (setq productQuantity (read))
+
+        (writeInComunicationWindow (concatenate 'string (princ-to-string productQuantity) " DE ___ (S/N)"))
+        (if (not (string= "S" (princ-to-string (read)))) (return))
+
+        (updateTotal productNumber productQuantity)
+
+        (writeInComunicationWindow CONTINUE_ORDER)
+        (if (not (string= "S" (princ-to-string (read)))) (return))
+    )
+)
+
+(defun selectProduct (productNumber) 
+    
+)
+
+(defun getProductName (productNumber)
+
+)
+
+(defun updateTotal (productNumber productQuantity)
+    (rectangle 325 5 310 30)
+
+    (printTotal )
+)
+
+(defun printTotal (total)
+
+    (printWord (princ-to-string total) )
+
+)
+
+(defun printProductImage (productNumber)
+    (printImage (concatenate 'string "images/products/" (princ-to-string productNumber) ".bmp") IMAGE_AREA_START_X IMAGE_AREA_START_Y IMAGE_AREA_SIZE)
+)
+
+(defun writeInComunicationWindow (message)
+    (eraseText 23 1 40)
+    (write 23 1 message)
+    (goto-xy (+ (length message) 2) 23)
+)
+
+(defun printOrderNumber (number)
+    (setq pedido (concatenate 'string "PEDIDO " (princ-to-string number)))
+    
+    ;Rellenar con espacios en blanco hasta el final.
+    ;(setq numColumnas 21)
+    ;(setq nSpaces (- numColumnas (length pedido)))
+
+    ;;(princ nSpaces)
+   ; (loop repeat nSpaces
+    ;    do (setq pedido (concatenate 'string pedido " "))
+    ;)
+
+    (printWord pedido 8 145 1)
+)
+
+(defun goodbyeMessage ()
+    (cls)
+    (color 0 0 255)
+    (princ "Gracias por utilizar la app! Hasta pronto!\n\nNadal Llabres Belmar \nAndreu Lopez Cortes")
+    (color 0 0 0)
 )
 
 ;------------------------------------------------------------------------------
@@ -93,9 +185,6 @@
 
 (defun initializeComunicationWindow ()
     (rectangle 5 5 315 30) 
-    (write 23 1 "[] INICIAR PEDIDO (S/N):")
-	(goto-xy 26 23)
-    (setq product (read)) 
 )
 
 (defun initializeTotalWindow ()
@@ -122,7 +211,7 @@
 ; Dibuja el área donde se muestran los productos disponibles.
 ;------------------------------------------------------------------------------
 (defun initializeImageArea ()
-    (printImage "images/LogoPractica.bmp" IMAGE_AREA_X IMAGE_AREA_Y IMAGE_AREA_SIZE)
+    (printImage LOGO IMAGE_AREA_START_X IMAGE_AREA_START_Y IMAGE_AREA_SIZE)
 )
 
 ;******************************************************************************
@@ -184,6 +273,7 @@
 )
 
 (defun printLetter (letra x y)
+    (if (string-equal letra " ") (setq letra ""))
     (printImage (concatenate 'string "images/charactersAndDigits/" letra "_NB.bmp") x y 20)
 )
 
@@ -192,4 +282,12 @@
 	(printLetter (string (aref palabra i)) x y)
 	(setq x (+ 20 x espaciado))
     )
+)
+
+(defun eraseText (linea columna numcolumnas)
+	(goto-xy columna linea)
+	(dotimes (i numcolumnas)
+		(princ " ")
+		(goto-xy (+ i columna) linea)
+	)
 )
