@@ -11,6 +11,31 @@
 (defconstant PRODUCT_AREA_LONG_Y 155)
 
 ;------------------------------------------------------------------------------
+; Introducción de los productos junto a su precio. Lista de listas de productos.
+;------------------------------------------------------------------------------
+(set 'products '(("UBoost 20" "179,95")
+                ("Zoom 20" "129,95")
+                ("Pegasus 37" "119,95")
+                ("Vaporfly X" "247,95")
+                ("Pegasus Tu" "179,95")
+                ("Zoom Fly 3" "159,95")
+                ("Saucony Gu" "275,95")
+                ("Fujitrabuco" "109,95")
+                ("Venture" "105,95")
+                ("GT-20 Trail" "139,95")
+                ("Terrex Ultra" "179,95")
+                ("Terrex Agra" "149,95")
+                ("Adidas SL20" "115,95")
+                ("Nimbus 22" "179,95")
+                ("Levitate 3" "169,95")
+                ("Fresh Foam" "169,95")
+                ("Joyride Dual" "129,95")
+                ("Vomero 15" "149,95")
+                ("Glycerin 18" "119,95")
+                ("GlideR Pro" "159,95"))
+)
+
+;------------------------------------------------------------------------------
 ; Función que inicia todo el programa.
 ;------------------------------------------------------------------------------
 (defun inicio()
@@ -20,6 +45,7 @@
     (initializeOrderNumberWindow)
     (printHeader)
     (initializeImageArea)
+    (initializeChosedProductsWindow)
     (initializeComunicationWindow)
 )
 
@@ -35,27 +61,34 @@
 ; Mostrar los productos disponibles en el áerea correspondiente. 
 ;------------------------------------------------------------------------------
 (defun printProducts ()
-    (write 3 1 "01. UltraBoost 20      189,99")
-    (write 4 1 "02. Asics Nim. 22      169,99")
-    (write 5 1 "03. NB Fresh Foam      199,99")
-    (write 6 1 "04. UltraBoost 20      189,99")
-    (write 7 1 "05. UltraBoost 20      189,99")
-    (write 8 1 "06. UltraBoost 20      189,99")
-    (write 9 1 "07. UltraBoost 20      189,99")
-    (write 10 1 "08. UltraBoost 20      189,99")
-    (write 11 1 "09. UltraBoost 20      189,99")
-    (write 12 1 "10. UltraBoost 20      189,99")
 
-    (write 3 31 "11. Product      189,99")
-    (write 4 31 "12. Product      169,99")
-    (write 5 31 "13. Product      199,99")
-    (write 6 31 "14. Product      189,99")
-    (write 7 31 "15. Product      189,99")
-    (write 8 31 "16. Product      189,99")
-    (write 9 31 "17. Product      189,99")
-    (write 10 31 "18. Product      189,99")
-    (write 11 31 "19. Product      189,99")
-    (write 12 31 "20. Product      189,99")
+    ;Inicialización de variables
+    (setq nline 3)
+    (setq ncolumn 1)
+    (setq nproduct 0)
+
+    (dolist (i products nproduct)
+
+        ;Cuando se llega a la mitad de los productos (10), se cambia a la columna
+        ;29 y se vuelve empezar en la fila 3
+        (cond ((= nproduct 10)
+            (setq ncolumn 29)
+            (setq nline 3))
+        )
+
+        ;Concatenar Número de producto + Nombre del producto + tabulación.
+        (setq line (concatenate 'string (princ-to-string nproduct) ". " (car i) "\t"))
+
+        ;Concatenar precio
+        (setq line (concatenate 'string line (princ-to-string (car (cdr i)))))
+
+        ;Mostrar en pantalla.
+        (write nline ncolumn line)
+
+        ;Incrementar variables.
+        (setq nline (+ nline 1))
+        (setq nproduct (+ nproduct 1))
+    )
 )
 
 (defun initializeComunicationWindow ()
@@ -79,6 +112,10 @@
     (rectangle 5 335 430 39)
     (fillAreaColor 0 0 0 5 335 435 469)
     (printWord "PRODUCTOS" 90 345 10)
+)
+
+(defun initializeChosedProductsWindow ()
+    (rectangle 5 40 630 95)
 )
 
 ;------------------------------------------------------------------------------
@@ -147,7 +184,7 @@
 )
 
 (defun printLetter (letra x y)
-    (printImage (concatenate 'string "images/" letra "_NB.bmp") x y 20)
+    (printImage (concatenate 'string "images/charactersAndDigits/" letra "_NB.bmp") x y 20)
 )
 
 (defun printWord (palabra x y espaciado)
