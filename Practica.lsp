@@ -13,34 +13,36 @@
 (defconstant LOGO "images/LogoPractica.bmp")
 
 (defconstant START_ORDER_MESSAGE "[] INICIAR PEDIDO (S/N):")
-(defconstant ORDER_NUMBER_MESSAGE "[] INDICAR NÚMERO DE PEDIDO:")
-(defconstant PRODUCT_NUMBER_MESSAGE "[] NÚMERO DE PRODUCTO:")
-(defconstant CONTINUE_ORDER "[] CONTINUAR PEDIDO (S/N):")
+(defconstant ORDER_NUMBER_MESSAGE "[] INDICAR NUMERO DE PEDIDO:")
+(defconstant PRODUCT_NUMBER_MESSAGE "[] NUMERO DE PRODUCTO:")
+(defconstant CONTINUE_ORDER_MESSAGE "[] CONTINUAR PEDIDO (S/N):")
 
 ;------------------------------------------------------------------------------
 ; Introducción de los productos junto a su precio. Lista de listas de productos.
 ;------------------------------------------------------------------------------
-(set 'products '(("UBoost 20" "179,95")
-                ("Zoom 20" "129,95")
-                ("Pegasus 37" "119,95")
-                ("Vaporfly X" "247,95")
-                ("Pegasus Tu" "179,95")
-                ("Zoom Fly 3" "159,95")
-                ("Saucony Gu" "275,95")
-                ("Fujitrabuco" "109,95")
-                ("Venture" "105,95")
-                ("GT-20 Trail" "139,95")
-                ("Terrex Ultra" "179,95")
-                ("Terrex Agra" "149,95")
-                ("Adidas SL20" "115,95")
-                ("Nimbus 22" "179,95")
-                ("Levitate 3" "169,95")
-                ("Fresh Foam" "169,95")
-                ("Joyride Dual" "129,95")
-                ("Vomero 15" "149,95")
-                ("Glycerin 18" "119,95")
-                ("GlideR Pro" "159,95"))
+(set 'products '(("UBoost 20" 179.95)
+                ("Zoom 20" 129.95)
+                ("Pegasus 37" 119.95)
+                ("Vaporfly X" 247.95)
+                ("Pegasus Tu" 179.95)
+                ("Zoom Fly 3" 159.95)
+                ("Saucony Gu" 275.95)
+                ("Fujitrabuco" 109.95)
+                ("Venture" 105.95)
+                ("GT-20 Trail" 139.95)
+                ("Terrex Ultra" 179.95)
+                ("Terrex Agra" 149.95)
+                ("Adidas SL20" 115.95)
+                ("Nimbus 22" 179.95)
+                ("Levitate 3" 169.95)
+                ("Fresh Foam" 169.95)
+                ("Joyride Dual" 129.95)
+                ("Vomero 15" 149.95)
+                ("Glycerin 18" 119.95)
+                ("GlideR Pro" 159.95))
 )
+
+(set 'selectedProducts '())
 
 ;------------------------------------------------------------------------------
 ; Función que inicia todo el programa.
@@ -54,10 +56,8 @@
 (defun initGuiElements()
     (cls)
     (printProductList)
-    (initializeTotalWindow)
     (initializeOrderNumberWindow)
     (printHeader)
-    (initializeImageArea)
     (initializeChosedProductsWindow)
     (initializeComunicationWindow)
 )
@@ -65,6 +65,15 @@
 (defun menu ()
     ;Bucle principal
     (loop
+
+        ;Reset de valores
+        (setq totalOrderPrice 0)
+        (resetCart)
+        (eraseChosedProductsWindow)
+        (initializeTotalWindow)
+        (initializeImageArea)
+
+        (setq logoPrinted t)
         (writeInComunicationWindow START_ORDER_MESSAGE)
         (if (not (string= "S" (princ-to-string (read)))) (return))
 
@@ -72,41 +81,144 @@
         (setq orderNumber (read))
         (printOrderNumber orderNumber)
 
-        (writeInComunicationWindow PRODUCT_NUMBER_MESSAGE)
-        (setq productNumber (read))
-        (printProductImage productNumber)
-        
-        (writeInComunicationWindow "UNIDADES:")
-        (setq productQuantity (read))
+        (loop
+            (if (not logoPrinted) (initializeImageArea))
+            (writeInComunicationWindow PRODUCT_NUMBER_MESSAGE)
+            (setq productNumber (read))
+            (printProductImage productNumber)
+            (setq logoPrinted nil)
 
-        (writeInComunicationWindow (concatenate 'string (princ-to-string productQuantity) " DE ___ (S/N)"))
-        (if (not (string= "S" (princ-to-string (read)))) (return))
+            (setq productName (getProductName productNumber))   
+            (setq productPrice (getProductPrice productNumber))
 
-        (updateTotal productNumber productQuantity)
+            (writeInComunicationWindow (concatenate 'string "UNIDADES DE " productName ":"))
+            (setq productQuantity (read))
 
-        (writeInComunicationWindow CONTINUE_ORDER)
-        (if (not (string= "S" (princ-to-string (read)))) (return))
+            (setq confirmation t)
+            (writeInComunicationWindow (concatenate 'string (princ-to-string productQuantity) " DE " productName " (S/N):"))
+            (if (not (string= "S" (princ-to-string (read)))) (setq confirmation nil))
+
+            (if confirmation (progn
+                (addToCart productName productQuantity productPrice)
+                (updateTotal productPrice productQuantity)
+            ))
+
+            (writeInComunicationWindow CONTINUE_ORDER_MESSAGE)
+                (if (not (string= "S" (princ-to-string (read)))) (progn 
+                (generateBill orderNumber)
+                (color 0 255 0)
+                (writeInComunicationWindow "Factura generada!")
+                (resetCart)
+                (color 0 0 0)
+                (return)
+            ))
+        )
     )
 )
 
-(defun selectProduct (productNumber) 
+(defun generateBill (orderNumber)
+    (setq file (open (concatenate 'string "pedido" (princ-to-string orderNumber) ".txt") :direction :output))
     
+    ;Primera línea.
+    (princ (concatenate 'string "PEDIDO " (princ-to-string orderNumber)) file)
+	(write-char #\newline file)
+
+    ;Segunda línea.
+    (princ "\t PRODUCTOS \t UNIDADES \t IMPORTE" file)
+	(write-char #\newline file)
+
+    (dolist (i selectedProducts)
+        (princ i file)
+    	(write-char #\newline file)    
+    )
+
+    ;Última línea.
+    (princ (concatenate 'string "TOTAL PEDIDO\t" (princ-to-string totalOrderPrice) " euros") file)
+)
+
+(defun resetCart()
+    (setq selectedProducts ())
+)
+
+(defun eraseChosedProductsWindow ()
+    (setq nline 16)
+
+    (dotimes (i 6)
+        (eraseText nline 1 79)
+        (setq nline (+ nline 1))    
+    )
+)
+
+(defun addToCart (productName productQuantity productPrice)
+    (setq element (concatenate 'string "[" productName " /" (princ-to-string productQuantity) "/ " (princ-to-string (* productQuantity productPrice)) "]"))
+    (setq selectedProducts (cons element selectedProducts))
+    (printCart)
+)
+
+(defun printCart ()
+
+    ;Inicialización de variables
+    (setq nline 16)
+    (setq ncolumn -25)
+    (setq nproduct 0)
+
+    ;Se revierte la lista para que se muestren en orden de inserción
+    (setq auxSelectedProducts selectedProducts)
+    (setq auxSelectedProducts (reverse auxSelectedProducts))
+
+    (dolist (i auxSelectedProducts nproduct)
+
+        ;Cuando se llega a la mitad de los productos (6), se cambia a la columna
+        ;29 y se vuelve empezar en la fila 16
+        (cond ((= (mod nproduct 6) 0)
+            (setq ncolumn (+ ncolumn 26))
+            (setq nline 16))
+        )
+
+        (setq line i)
+
+        ;Mostrar en pantalla.
+        (write nline ncolumn line)
+
+        ;Incrementar variables.
+        (setq nline (+ nline 1))
+        (setq nproduct (+ nproduct 1))
+    )
+)
+
+(defun getProductPrice (productNumber)
+
+    (setq products2 products)
+    (setq counter 0)
+
+    (dolist (i products2 productNumber)
+        (if (= counter productNumber) (return-from getProductPrice (car (cdr i))))
+        (setq counter  (+ counter 1))
+        (setq products2 (cdr products2))
+    )
 )
 
 (defun getProductName (productNumber)
 
+    (setq products2 products)
+    (setq counter 0)
+
+    (dolist (i products2 productNumber)
+        ;Progn permite poner más de una sentencia en la clausula "then" del if (en este caso no es necesario).
+        (if (= counter productNumber) (return-from getProductName (princ-to-string (car i))))
+        (setq counter  (+ counter 1))
+        (setq products2 (cdr products2))
+    )
 )
 
-(defun updateTotal (productNumber productQuantity)
-    (rectangle 325 5 310 30)
-
-    (printTotal )
+(defun updateTotal (productPrice productQuantity)
+    (setq totalOrderPrice (+ (* productQuantity productPrice) totalOrderPrice))
+    (printTotal totalOrderPrice)
 )
 
 (defun printTotal (total)
-
-    (printWord (princ-to-string total) )
-
+    (printWord  "TOTAL" 330 10 1)
+    (printWord (princ-to-string total) 440 10 1)
 )
 
 (defun printProductImage (productNumber)
