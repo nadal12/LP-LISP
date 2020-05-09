@@ -341,7 +341,13 @@
 (defun printImage (imagen x y dimension)
 	(setq fichero (open imagen :direction :input 
 	:element-type 'unsigned-byte))
-	(setq pixel -17)
+
+    ;Lectura de la cabecera del archivo .bmp (54 bytes)
+    (dotimes (i 54)
+        (read-byte fichero nil)
+    )
+
+	(setq pixel 1)
 	(setq R 0 G 0 B 0)
 	(setq x1 x)
 	(move x1 y)
