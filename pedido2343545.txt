@@ -1,7 +1,0 @@
-PEDIDO 2343545
-	 PRODUCTOS 	 UNIDADES 	 IMPORTE
-[Vaporfly X /2/ 495.9]
-[Pegasus 37 /3/ 359.85]
-[Zoom 20 /2/ 259.9]
-[UBoost 20 /1/ 179.95]
-TOTAL PEDIDO	1295.6 euros
