@@ -1,4 +1,20 @@
 ;------------------------------------------------------------------------------
+;                              PRÁCTICA LISP
+; Alumnos:
+;           Nadal Llabrés Belmar
+;           Andreu López Cortés
+; Curso:
+;           2019/2020
+; Asignatura: 
+;           21721 - Lenguajes de Programación
+;
+;------------------------------------------------------------------------------
+
+;******************************************************************************
+;*          DECLARACIONES INICIALES E INTRODUCCIÓN DE PRODUCTOS               *
+;******************************************************************************
+
+;------------------------------------------------------------------------------
 ; Declaración de constantes
 ;------------------------------------------------------------------------------
 (defconstant IMAGE_AREA_START_X 440)
@@ -42,7 +58,13 @@
                 ("GlideR Pro" 159.95))
 )
 
+;Lista que se usará posteriormente para almacenar los productos que el usuario
+;haya elegido. 
 (set 'selectedProducts '())
+
+;******************************************************************************
+;*                         FUNCIONES DEL PROGRAMA                             *
+;******************************************************************************
 
 ;------------------------------------------------------------------------------
 ; Función que inicia todo el programa.
@@ -53,6 +75,9 @@
     (goodbyeMessage)
 )
 
+;------------------------------------------------------------------------------
+; Inicializa los elementos gráficos. 
+;------------------------------------------------------------------------------
 (defun initGuiElements()
     (cls)
     (printProductList)
@@ -62,6 +87,9 @@
     (initializeComunicationWindow)
 )
 
+;------------------------------------------------------------------------------
+; Encargada de gestionar el menú y recolectar los datos del usuario. 
+;------------------------------------------------------------------------------
 (defun menu ()
     ;Bucle principal
     (loop
@@ -81,6 +109,7 @@
         (setq orderNumber (read))
         (printOrderNumber orderNumber)
 
+        ; Segundo bucle para la elección de productos. 
         (loop
             (if (not logoPrinted) (initializeImageArea))
             (writeInComunicationWindow PRODUCT_NUMBER_MESSAGE)
@@ -116,6 +145,10 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Genera la factura con el formato: pedidoX.txt 
+; Donde X es el número de pedido. 
+;------------------------------------------------------------------------------
 (defun generateBill (orderNumber)
     (setq file (open (concatenate 'string "pedido" (princ-to-string orderNumber) ".txt") :direction :output))
 
@@ -155,6 +188,10 @@
     (princ (concatenate 'string "TOTAL PEDIDO\t" (princ-to-string totalOrderPrice) " euros") file)
 )
 
+;------------------------------------------------------------------------------
+; Extiende un string por la parte trasera con la cantidad indicada en size 
+; y el carácter que se utilizará para extender en char.
+;------------------------------------------------------------------------------
 (defun extendStringBehind (str size char)
     (setq size (- size (length str)))
     (dotimes (i size)
@@ -163,6 +200,10 @@
     (return-from extendStringBehind str)
 )
 
+;------------------------------------------------------------------------------
+; Extiende un string por la parte delantera con la cantidad indicada en size 
+; y el carácter que se utilizará para extender en char.
+;------------------------------------------------------------------------------
 (defun extendStringFront (str size char)
     (setq size (- size (length str)))
     (dotimes (i size)
@@ -171,10 +212,17 @@
     (return-from extendStringFront str)
 )
 
+;------------------------------------------------------------------------------
+; Elimina todos los productos del carrito de compra. 
+;------------------------------------------------------------------------------
 (defun resetCart()
     (setq selectedProducts ())
 )
 
+;------------------------------------------------------------------------------
+; Resetea la ventana de productos elegidos para que se pueda generar un nuevo
+; pedido. 
+;------------------------------------------------------------------------------
 (defun eraseChosedProductsWindow ()
     (setq nline 16)
 
@@ -184,6 +232,12 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Se añade un producto al carrito. Los datos son: 
+; - Nombre del producto. 
+; - Cantidad. 
+; - Precio de una unidad del producto. 
+;------------------------------------------------------------------------------
 (defun addToCart (productName productQuantity productPrice)
     ;Extener string para que todos tengan el mismo tamaño.
     (setq productName (extendStringBehind productName 12 " "))
@@ -193,6 +247,10 @@
     (printCart)
 )
 
+;------------------------------------------------------------------------------
+; Imprime los productos del carrito en pantalla para que el usuario tenga 
+; feedback de lo que tiene actualmente pedido. 
+;------------------------------------------------------------------------------
 (defun printCart ()
 
     ;Inicialización de variables
@@ -224,6 +282,10 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Devuelve el precio de un producto pasando por parámetro su referencia (número
+; de producto). 
+;------------------------------------------------------------------------------
 (defun getProductPrice (productNumber)
 
     (setq products2 products)
@@ -236,6 +298,10 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Devuelve el nombre de un producto pasando por parámetro su referencia (número
+; de producto). 
+;------------------------------------------------------------------------------
 (defun getProductName (productNumber)
 
     (setq products2 products)
@@ -249,11 +315,18 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Actualiza el nuevo total después de haber cambios en el carrito. 
+;------------------------------------------------------------------------------
 (defun updateTotal (productPrice productQuantity)
     (setq totalOrderPrice (+ (* productQuantity productPrice) totalOrderPrice))
     (printTotal totalOrderPrice)
 )
 
+;------------------------------------------------------------------------------
+; Imprime el total en euros del contenido del carrito en la caja inferior 
+; derecha. 
+;------------------------------------------------------------------------------
 (defun printTotal (total)
     (printWord  "TOTAL" 330 10 1)
 
@@ -263,16 +336,27 @@
     (printWord total 440 10 1)
 )
 
+;------------------------------------------------------------------------------
+; Imprime la imagen de un producto mediante el paso de su referencia. 
+;------------------------------------------------------------------------------
 (defun printProductImage (productNumber)
     (printImage (concatenate 'string "images/products/" (princ-to-string productNumber) ".bmp") IMAGE_AREA_START_X IMAGE_AREA_START_Y IMAGE_AREA_SIZE)
 )
 
+;------------------------------------------------------------------------------
+; Escribe en la ventana de comunicación del usuario el texto indicado por 
+; parámetro. Si había texto ya escrito, lo elimina.  
+;------------------------------------------------------------------------------
 (defun writeInComunicationWindow (message)
     (eraseText 23 1 40)
     (write 23 1 message)
     (goto-xy (+ (length message) 2) 23)
 )
 
+;------------------------------------------------------------------------------
+; Imprime en el área correspondiente el número de pedido que ha introducido el 
+; usuario. 
+;------------------------------------------------------------------------------
 (defun printOrderNumber (number)
     (setq pedido (concatenate 'string "PEDIDO " (princ-to-string number)))
     
@@ -282,6 +366,9 @@
     (printWord pedido 8 145 1)
 )
 
+;------------------------------------------------------------------------------
+; Mensaje de despedida cuando se cierra el programa. 
+;------------------------------------------------------------------------------
 (defun goodbyeMessage ()
     (cls)
     (color 0 0 255)
@@ -331,32 +418,47 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Inicializa la ventana para interaccionar con el usuario. 
+;------------------------------------------------------------------------------
 (defun initializeComunicationWindow ()
     (rectangle 5 5 315 30) 
 )
 
+;------------------------------------------------------------------------------
+; Inicializa la ventana donde se muestra el total del pedido. 
+;------------------------------------------------------------------------------
 (defun initializeTotalWindow ()
     (rectangle 325 5 310 30)
     (fillAreaColor 0 0 0 638 5 325 35)
 )
 
+;------------------------------------------------------------------------------
+; Inicializa la ventana donde se muestra el número de pedido. 
+;------------------------------------------------------------------------------
 (defun initializeOrderNumberWindow ()
     (rectangle 5 140 633 30)
     (fillAreaColor 0 0 0 5 140 638 170)
 )
 
+;------------------------------------------------------------------------------
+; Imprime la cabecera del programa.  
+;------------------------------------------------------------------------------
 (defun printHeader () 
     (rectangle 5 335 430 39)
     (fillAreaColor 0 0 0 5 335 435 469)
     (printWord "PRODUCTOS" 90 345 10)
 )
 
+;------------------------------------------------------------------------------
+; Inicializa la ventana donde se muestran los productos del carrito. 
+;------------------------------------------------------------------------------
 (defun initializeChosedProductsWindow ()
     (rectangle 5 40 633 95)
 )
 
 ;------------------------------------------------------------------------------
-; Dibuja el área donde se muestran los productos disponibles.
+; Dibuja el área donde se muestran las imágenes de los productos.
 ;------------------------------------------------------------------------------
 (defun initializeImageArea ()
     (printImage LOGO IMAGE_AREA_START_X IMAGE_AREA_START_Y IMAGE_AREA_SIZE)
@@ -374,6 +476,10 @@
 	(draw x (+ y dimy) (+ x dimx) (+ y dimy) (+ x dimx) y x y)
 )
 
+;------------------------------------------------------------------------------
+; Imprime una imagen cuadrada en la posición x y de la ventana. El último
+; parámetro indica la dimensión de la misma. 
+;------------------------------------------------------------------------------
 (defun printImage (imagen x y dimension)
 	(setq fichero (open imagen :direction :input 
 	:element-type 'unsigned-byte))
@@ -405,15 +511,19 @@
         (close fichero)
 )
 
-;visualiza el texto dado en la (linea,columna)dada de la pantalla en modo texto
+;------------------------------------------------------------------------------
+; Escribe un texto en la línea y columna indicada de la ventana. 
+;------------------------------------------------------------------------------
 (defun write (linea columna TEXTO)
 	(goto-xy columna linea)
 	(princ TEXTO)
 )
 
+;------------------------------------------------------------------------------
+; Rellena un área específica del color elegido. 
+;------------------------------------------------------------------------------
 (defun fillAreaColor (r g b x1 y1 x2 y2)
 	(color r g b)
-	(paralelepipedo x1 y1 x2 y2)
 	(dotimes (i (- y2 y1))
 		(move x1 (+ i y1))
 		(draw x2 (+ i y1))
@@ -421,16 +531,17 @@
 	(color 0 0 0)
 )
 
-(defun paralelepipedo (x1 y1 x2 y2)
-	(move x1 y1)
-	(draw x1 y2 x2 y2 x2 y1 x1 y1)
-)
-
+;------------------------------------------------------------------------------
+; Imprime una letra en la posición x y.
+;------------------------------------------------------------------------------
 (defun printLetter (letra x y)
     (if (string-equal letra " ") (setq letra ""))
     (printImage (concatenate 'string "images/charactersAndDigits/" letra "_NB.bmp") x y 20)
 )
 
+;------------------------------------------------------------------------------
+; Imprime una palabra en la posición x y con el espaciado indicado. 
+;------------------------------------------------------------------------------
 (defun printWord (palabra x y espaciado)
     (dotimes (i (length palabra))
 	(printLetter (string (aref palabra i)) x y)
@@ -438,6 +549,10 @@
     )
 )
 
+;------------------------------------------------------------------------------
+; Elimina el texto a partir de la línea y columna especificada y la cantidadad
+; de columnas. 
+;------------------------------------------------------------------------------
 (defun eraseText (linea columna numcolumnas)
 	(goto-xy columna linea)
 	(dotimes (i numcolumnas)
