@@ -118,7 +118,7 @@
 
 (defun generateBill (orderNumber)
     (setq file (open (concatenate 'string "pedido" (princ-to-string orderNumber) ".txt") :direction :output))
-    
+
     ;Primera línea.
     (princ (concatenate 'string "PEDIDO " (princ-to-string orderNumber)) file)
 	(write-char #\newline file)
@@ -128,12 +128,47 @@
 	(write-char #\newline file)
 
     (dolist (i selectedProducts)
-        (princ i file)
+
+        ;Quitar los corchetes iniciales i finales. 
+        (setq i (string-trim "[]" i))
+
+        (setq startIndex 0)
+        (setq endIndex 1)
+
+        ;Iterar por el producto para separar nombre, unidades y precio. 
+        (dotimes (j (length i))
+
+            ;Coger primer char
+            (setq char (subseq i startIndex endIndex))
+
+            (if (string-equal char "/") (princ "\t\t" file) (princ char file))
+            
+            (setq startIndex (+ startIndex 1)) 
+            (setq endIndex (+ endIndex 1)) 
+        
+        )
+        ;Nueva línea para el siguiente producto. 
     	(write-char #\newline file)    
     )
 
     ;Última línea.
     (princ (concatenate 'string "TOTAL PEDIDO\t" (princ-to-string totalOrderPrice) " euros") file)
+)
+
+(defun extendStringBehind (str size char)
+    (setq size (- size (length str)))
+    (dotimes (i size)
+        (setq str (concatenate 'string str char))    
+    )
+    (return-from extendStringBehind str)
+)
+
+(defun extendStringFront (str size char)
+    (setq size (- size (length str)))
+    (dotimes (i size)
+        (setq str (concatenate 'string char str))    
+    )
+    (return-from extendStringFront str)
 )
 
 (defun resetCart()
@@ -150,6 +185,9 @@
 )
 
 (defun addToCart (productName productQuantity productPrice)
+    ;Extener string para que todos tengan el mismo tamaño.
+    (setq productName (extendStringBehind productName 12 " "))
+
     (setq element (concatenate 'string "[" productName " /" (princ-to-string productQuantity) "/ " (princ-to-string (* productQuantity productPrice)) "]"))
     (setq selectedProducts (cons element selectedProducts))
     (printCart)
@@ -218,7 +256,11 @@
 
 (defun printTotal (total)
     (printWord  "TOTAL" 330 10 1)
-    (printWord (princ-to-string total) 440 10 1)
+
+    ;Añadir ceros por delante. 
+    (setq total (extendStringFront (princ-to-string total) 9 "0"))
+
+    (printWord total 440 10 1)
 )
 
 (defun printProductImage (productNumber)
@@ -234,14 +276,8 @@
 (defun printOrderNumber (number)
     (setq pedido (concatenate 'string "PEDIDO " (princ-to-string number)))
     
-    ;Rellenar con espacios en blanco hasta el final.
-    ;(setq numColumnas 21)
-    ;(setq nSpaces (- numColumnas (length pedido)))
-
-    ;;(princ nSpaces)
-   ; (loop repeat nSpaces
-    ;    do (setq pedido (concatenate 'string pedido " "))
-    ;)
+    ;Añadir espacios para imprimir con cuadros blancos. (30 carácteres total).
+    (setq pedido (extendStringBehind pedido 30 " "))
 
     (printWord pedido 8 145 1)
 )
@@ -301,12 +337,12 @@
 
 (defun initializeTotalWindow ()
     (rectangle 325 5 310 30)
-    (fillAreaColor 0 0 0 635 5 325 35)
+    (fillAreaColor 0 0 0 638 5 325 35)
 )
 
 (defun initializeOrderNumberWindow ()
-    (rectangle 5 140 630 30)
-    (fillAreaColor 0 0 0 5 140 635 170)
+    (rectangle 5 140 633 30)
+    (fillAreaColor 0 0 0 5 140 638 170)
 )
 
 (defun printHeader () 
@@ -316,7 +352,7 @@
 )
 
 (defun initializeChosedProductsWindow ()
-    (rectangle 5 40 630 95)
+    (rectangle 5 40 633 95)
 )
 
 ;------------------------------------------------------------------------------
