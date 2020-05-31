@@ -81,7 +81,6 @@
 (defun initGuiElements()
     (cls)
     (printProductList)
-    (initializeOrderNumberWindow)
     (printHeader)
     (initializeChosedProductsWindow)
     (initializeComunicationWindow)
@@ -98,6 +97,7 @@
         (setq totalOrderPrice 0)
         (resetCart)
         (eraseChosedProductsWindow)
+        (initializeOrderNumberWindow)
         (initializeTotalWindow)
         (initializeImageArea)
 
@@ -137,7 +137,6 @@
                 (generateBill orderNumber)
                 (color 0 255 0)
                 (writeInComunicationWindow "Factura generada!")
-                (resetCart)
                 (color 0 0 0)
                 (return)
             ))
